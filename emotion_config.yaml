@@ -1,0 +1,104 @@
+# ──────────────────────────────────────────────
+# Empathy Engine — Emotion → Voice Mapping Config
+# ──────────────────────────────────────────────
+# Voice modulation uses non-linear intensity scaling:
+#   scaled_intensity = intensity ^ 1.5
+#   final = base + (scaled_intensity × range)
+#
+# Pitch is capped at ±0.5 semitones to keep changes minimal.
+# Rate and volume carry most of the intensity-driven differentiation.
+#
+# rate   : words-per-minute offset from default (0 = normal)
+# pitch  : semitone offset from default (0 = normal)
+# volume : linear gain multiplier (1.0 = normal)
+
+emotions:
+  joy:
+    rate:
+      base: 3
+      range: 20           # wide range: low intensity ≈ +3, high ≈ +23
+    pitch:
+      base: 0.1
+      range: 0.5          # subtle — capped at ±0.5st anyway
+    volume:
+      base: 1.02
+      range: 0.15         # slightly louder at high intensity
+    azure_style: "cheerful"
+
+  sadness:
+    rate:
+      base: -3
+      range: -20          # slows down significantly at high intensity
+    pitch:
+      base: -0.1
+      range: -0.5         # minimal deepening
+    volume:
+      base: 0.95
+      range: -0.15        # quieter at high intensity
+    azure_style: "sad"
+
+  anger:
+    rate:
+      base: 3
+      range: 25           # fast and urgent at high intensity
+    pitch:
+      base: 0.1
+      range: 0.5          # slight edge — capped
+    volume:
+      base: 1.05
+      range: 0.20         # louder
+    azure_style: "angry"
+
+  fear:
+    rate:
+      base: 2
+      range: 18           # hurried at high intensity
+    pitch:
+      base: 0.1
+      range: 0.5          # slight tension
+    volume:
+      base: 0.95
+      range: -0.10        # slightly quieter
+    azure_style: "terrified"
+
+  surprise:
+    rate:
+      base: 3
+      range: 22           # burst of energy
+    pitch:
+      base: 0.2
+      range: 0.5          # higher pitch — capped
+    volume:
+      base: 1.03
+      range: 0.20         # louder
+    azure_style: "excited"
+
+  disgust:
+    rate:
+      base: -2
+      range: -12          # slower
+    pitch:
+      base: -0.1
+      range: -0.5         # slightly lower
+    volume:
+      base: 0.95
+      range: -0.10
+    azure_style: "angry"
+
+  neutral:
+    rate:
+      base: 0
+      range: 0
+    pitch:
+      base: 0
+      range: 0
+    volume:
+      base: 1.0
+      range: 0
+    azure_style: "neutral"
+
+# Default TTS settings
+defaults:
+  rate_wpm: 175          # baseline words-per-minute
+  pitch_hz: 0            # baseline pitch offset
+  volume: 1.0            # baseline volume

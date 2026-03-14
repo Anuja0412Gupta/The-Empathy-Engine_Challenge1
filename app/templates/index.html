@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Empathy Engine — Emotion-Aware TTS</title>
+    <meta name="description" content="Transform text into emotionally expressive speech with AI-powered emotion detection and voice modulation." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+    <!-- ── Animated Background ──────────────────────── -->
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="container">
+        <!-- ── Header ───────────────────────────────── -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🧠</span>
+                <div>
+                    <h1>Empathy Engine</h1>
+                    <p class="subtitle">Emotion-Aware Text-to-Speech</p>
+                </div>
+            </div>
+            <span class="badge-live" id="status-badge">Ready</span>
+        </header>
+
+        <!-- ── Main Grid ────────────────────────────── -->
+        <main class="main-grid">
+            <!-- ── Input Panel ──────────────────────── -->
+            <section class="panel panel-input">
+                <h2 class="panel-title">
+                    <span class="icon">📝</span> Text Input
+                </h2>
+                <textarea id="text-input" placeholder="Type or paste text to convert into emotionally expressive speech…" rows="5"></textarea>
+                <div class="input-actions">
+                    <span class="char-count" id="char-count">0 / 5000</span>
+                    <button class="btn btn-primary" id="btn-generate" onclick="generateSpeech()">
+                        <span class="btn-icon">⚡</span>
+                        <span class="btn-text">Generate Speech</span>
+                    </button>
+                </div>
+
+                <!-- ── Quick Demo Phrases ───────────── -->
+                <div class="demo-phrases">
+                    <span class="demo-label">Try:</span>
+                    <button class="chip" onclick="setDemo(this)">I'm so happy today! Everything is wonderful!</button>
+                    <button class="chip" onclick="setDemo(this)">I am absolutely furious about this situation!</button>
+
+                    <button class="chip" onclick="setDemo(this)">Oh wow, I can't believe this happened!</button>
+                    <button class="chip" onclick="setDemo(this)">I'm really scared about what might happen next.</button>
+                </div>
+            </section>
+
+            <!-- ── Emotion Results Panel ────────────── -->
+            <section class="panel panel-emotion" id="emotion-panel" style="display:none;">
+                <h2 class="panel-title">
+                    <span class="icon">🎭</span> Emotion Analysis
+                </h2>
+                <div class="emotion-header">
+                    <div class="emotion-badge-wrapper">
+                        <span class="emotion-badge" id="emotion-label">—</span>
+                        <div class="intensity-bar-wrapper">
+                            <span class="intensity-label">Intensity</span>
+                            <div class="intensity-bar">
+                                <div class="intensity-fill" id="intensity-fill"></div>
+                            </div>
+                            <span class="intensity-value" id="intensity-value">0%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="emotion-chart"></canvas>
+                </div>
+
+                <!-- ── Per-Sentence Breakdown ──── -->
+                <div class="sentence-breakdown" id="sentence-breakdown" style="display:none;">
+                    <h3 class="breakdown-title">📋 Per-Sentence Analysis</h3>
+                    <div class="sentence-list" id="sentence-list"></div>
+                </div>
+            </section>
+
+            <!-- ── Voice Parameters Panel ───────────── -->
+            <section class="panel panel-voice" id="voice-panel" style="display:none;">
+                <h2 class="panel-title">
+                    <span class="icon">🎤</span> Voice Parameters
+                </h2>
+                <div class="param-grid">
+                    <div class="param-card">
+                        <span class="param-icon">🏃</span>
+                        <span class="param-name">Rate</span>
+                        <span class="param-value" id="param-rate">—</span>
+                        <span class="param-unit">WPM</span>
+                    </div>
+                    <div class="param-card">
+                        <span class="param-icon">🎵</span>
+                        <span class="param-name">Pitch</span>
+                        <span class="param-value" id="param-pitch">—</span>
+                        <span class="param-unit">semitones</span>
+                    </div>
+                    <div class="param-card">
+                        <span class="param-icon">🔊</span>
+                        <span class="param-name">Volume</span>
+                        <span class="param-value" id="param-volume">—</span>
+                        <span class="param-unit">×</span>
+                    </div>
+                    <div class="param-card">
+                        <span class="param-icon">🎨</span>
+                        <span class="param-name">Style</span>
+                        <span class="param-value" id="param-style">—</span>
+                        <span class="param-unit">azure</span>
+                    </div>
+                </div>
+                <div class="engine-info">
+                    <span class="engine-label">Engine:</span>
+                    <span class="engine-value" id="engine-used">—</span>
+                </div>
+            </section>
+
+            <!-- ── Audio Player Panel ───────────────── -->
+            <section class="panel panel-audio" id="audio-panel" style="display:none;">
+                <h2 class="panel-title">
+                    <span class="icon">🔊</span> Audio Output
+                </h2>
+                <div class="waveform-container">
+                    <div id="waveform"></div>
+                    <div class="audio-controls">
+                        <button class="btn btn-icon-round" id="btn-play" onclick="togglePlay()">▶</button>
+                        <span class="audio-time" id="audio-time">0:00 / 0:00</span>
+                        <a class="btn btn-outline btn-small" id="btn-download" href="#" download>
+                            💾 Download WAV
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- ── Footer ───────────────────────────────── -->
+        <footer class="footer">
+            <p>Empathy Engine v1.0 — Built with FastAPI, HuggingFace Transformers & VADER</p>
+        </footer>
+    </div>
+
+    <!-- ── Loading Overlay ──────────────────────────── -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-card">
+            <div class="spinner"></div>
+            <p class="loading-text" id="loading-text">Analyzing emotions…</p>
+        </div>
+    </div>
+
+    <script>
+        // ── State ──────────────────────────────────────
+        let wavesurfer = null;
+        let emotionChart = null;
+        let isPlaying = false;
+
+        // ── Char counter ───────────────────────────────
+        const textInput = document.getElementById('text-input');
+        const charCount = document.getElementById('char-count');
+        textInput.addEventListener('input', () => {
+            charCount.textContent = `${textInput.value.length} / 5000`;
+        });
+
+        // ── Demo phrase chips ──────────────────────────
+        function setDemo(el) {
+            textInput.value = el.textContent;
+            textInput.dispatchEvent(new Event('input'));
+            textInput.focus();
+        }
+
+        // ── Emotion colors ─────────────────────────────
+        const EMOTION_COLORS = {
+            joy:      { bg: '#fbbf24', text: '#78350f', glow: 'rgba(251,191,36,0.4)' },
+            sadness:  { bg: '#60a5fa', text: '#1e3a5f', glow: 'rgba(96,165,250,0.4)' },
+            anger:    { bg: '#f87171', text: '#7f1d1d', glow: 'rgba(248,113,113,0.4)' },
+            fear:     { bg: '#a78bfa', text: '#3b0764', glow: 'rgba(167,139,250,0.4)' },
+            surprise: { bg: '#fb923c', text: '#7c2d12', glow: 'rgba(251,146,60,0.4)' },
+            disgust:  { bg: '#4ade80', text: '#14532d', glow: 'rgba(74,222,128,0.4)' },
+            neutral:  { bg: '#94a3b8', text: '#1e293b', glow: 'rgba(148,163,184,0.4)' },
+        };
+
+        // ── Generate Speech ────────────────────────────
+        async function generateSpeech() {
+            const text = textInput.value.trim();
+            if (!text) {
+                textInput.focus();
+                return;
+            }
+
+            showLoading('Analyzing emotions…');
+            const btn = document.getElementById('btn-generate');
+            btn.disabled = true;
+
+            try {
+                updateLoading('Detecting emotion & synthesizing speech…');
+                const res = await fetch('/api/synthesize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text }),
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Synthesis failed');
+                }
+
+                const data = await res.json();
+                updateLoading('Rendering results…');
+
+                // Small delay for visual effect
+                await new Promise(r => setTimeout(r, 300));
+
+                renderResults(data);
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+            } finally {
+                btn.disabled = false;
+                hideLoading();
+            }
+        }
+
+        // ── Intensity level label ──────────────────────
+        function getIntensityLevel(intensity) {
+            if (intensity >= 0.8) return { label: 'Extreme', color: '#ef4444' };
+            if (intensity >= 0.6) return { label: 'High', color: '#f59e0b' };
+            if (intensity >= 0.35) return { label: 'Medium', color: '#3b82f6' };
+            return { label: 'Low', color: '#6b7280' };
+        }
+
+        // ── Render Results ─────────────────────────────
+        function renderResults(data) {
+            const { emotion, voice_params, audio_url, engine_used, sentence_emotions } = data;
+            const color = EMOTION_COLORS[emotion.emotion] || EMOTION_COLORS.neutral;
+
+            // Show panels with animation
+            ['emotion-panel', 'voice-panel', 'audio-panel'].forEach(id => {
+                const el = document.getElementById(id);
+                el.style.display = '';
+                el.classList.add('panel-enter');
+                setTimeout(() => el.classList.remove('panel-enter'), 500);
+            });
+
+            // ── Emotion badge ──────────────────────────
+            const badge = document.getElementById('emotion-label');
+            badge.textContent = emotion.emotion.toUpperCase();
+            badge.style.background = color.bg;
+            badge.style.color = color.text;
+            badge.style.boxShadow = `0 0 20px ${color.glow}`;
+
+            // ── Intensity bar ──────────────────────────
+            const pct = Math.round(emotion.intensity * 100);
+            const level = getIntensityLevel(emotion.intensity);
+            document.getElementById('intensity-fill').style.width = `${pct}%`;
+            document.getElementById('intensity-fill').style.background = color.bg;
+            document.getElementById('intensity-value').textContent = `${pct}% (${level.label})`;
+
+            // ── Emotion chart ──────────────────────────
+            renderEmotionChart(emotion.probabilities, color);
+
+            // ── Voice params ───────────────────────────
+            document.getElementById('param-rate').textContent = voice_params.rate;
+            document.getElementById('param-pitch').textContent = `${voice_params.pitch > 0 ? '+' : ''}${voice_params.pitch}`;
+            document.getElementById('param-volume').textContent = voice_params.volume;
+            document.getElementById('param-style').textContent = voice_params.azure_style;
+            document.getElementById('engine-used').textContent = engine_used;
+
+            // ── Per-sentence breakdown ─────────────────
+            renderSentenceBreakdown(sentence_emotions);
+
+            // ── Waveform player ────────────────────────
+            renderWaveform(audio_url, color);
+
+            // ── Download link ──────────────────────────
+            document.getElementById('btn-download').href = audio_url;
+
+            // Status badge
+            const statusBadge = document.getElementById('status-badge');
+            statusBadge.textContent = `${emotion.emotion}`;
+            statusBadge.style.background = color.bg;
+            statusBadge.style.color = color.text;
+        }
+
+        // ── Per-Sentence Breakdown ─────────────────────
+        function renderSentenceBreakdown(sentenceEmotions) {
+            const container = document.getElementById('sentence-breakdown');
+            const list = document.getElementById('sentence-list');
+
+            if (!sentenceEmotions || sentenceEmotions.length <= 1) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = '';
+            list.innerHTML = '';
+
+            sentenceEmotions.forEach((se, i) => {
+                const color = EMOTION_COLORS[se.emotion.emotion] || EMOTION_COLORS.neutral;
+                const level = getIntensityLevel(se.emotion.intensity);
+                const pct = Math.round(se.emotion.intensity * 100);
+
+                const card = document.createElement('div');
+                card.className = 'sentence-card';
+                card.style.borderLeftColor = color.bg;
+                card.innerHTML = `
+                    <div class="sentence-text">"${se.sentence}"</div>
+                    <div class="sentence-meta">
+                        <span class="sentence-emotion" style="background:${color.bg};color:${color.text}">${se.emotion.emotion}</span>
+                        <span class="sentence-intensity" style="color:${level.color}">⚡ ${pct}% ${level.label}</span>
+                        ${se.voice_params ? `<span class="sentence-rate">🏃 ${se.voice_params.rate} WPM</span>` : ''}
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // ── Emotion Radar Chart ────────────────────────
+        function renderEmotionChart(probabilities, activeColor) {
+            const ctx = document.getElementById('emotion-chart').getContext('2d');
+
+            if (emotionChart) emotionChart.destroy();
+
+            const labels = Object.keys(probabilities).map(l => l.charAt(0).toUpperCase() + l.slice(1));
+            const values = Object.values(probabilities).map(v => +(v * 100).toFixed(1));
+
+            emotionChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Emotion Probability (%)',
+                        data: values,
+                        backgroundColor: 'rgba(139, 92, 246, 0.15)',
+                        borderColor: activeColor.bg,
+                        borderWidth: 2,
+                        pointBackgroundColor: activeColor.bg,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 1,
+                        pointRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                stepSize: 25,
+                                color: 'rgba(255,255,255,0.35)',
+                                backdropColor: 'transparent',
+                                font: { size: 10 }
+                            },
+                            grid: { color: 'rgba(255,255,255,0.08)' },
+                            angleLines: { color: 'rgba(255,255,255,0.08)' },
+                            pointLabels: {
+                                color: 'rgba(255,255,255,0.75)',
+                                font: { family: 'Inter', size: 12, weight: '500' }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                    }
+                }
+            });
+        }
+
+        // ── Waveform Player ────────────────────────────
+        function renderWaveform(url, color) {
+            if (wavesurfer) wavesurfer.destroy();
+            isPlaying = false;
+            document.getElementById('btn-play').textContent = '▶';
+
+            wavesurfer = WaveSurfer.create({
+                container: '#waveform',
+                waveColor: 'rgba(255,255,255,0.25)',
+                progressColor: color.bg,
+                cursorColor: color.bg,
+                cursorWidth: 2,
+                barWidth: 3,
+                barGap: 2,
+                barRadius: 3,
+                height: 80,
+                responsive: true,
+                backend: 'WebAudio',
+            });
+
+            wavesurfer.load(url);
+
+            wavesurfer.on('ready', () => {
+                const dur = wavesurfer.getDuration();
+                document.getElementById('audio-time').textContent = `0:00 / ${formatTime(dur)}`;
+            });
+
+            wavesurfer.on('audioprocess', () => {
+                const cur = wavesurfer.getCurrentTime();
+                const dur = wavesurfer.getDuration();
+                document.getElementById('audio-time').textContent = `${formatTime(cur)} / ${formatTime(dur)}`;
+            });
+
+            wavesurfer.on('finish', () => {
+                isPlaying = false;
+                document.getElementById('btn-play').textContent = '▶';
+            });
+        }
+
+        function togglePlay() {
+            if (!wavesurfer) return;
+            wavesurfer.playPause();
+            isPlaying = !isPlaying;
+            document.getElementById('btn-play').textContent = isPlaying ? '⏸' : '▶';
+        }
+
+        function formatTime(s) {
+            const m = Math.floor(s / 60);
+            const sec = Math.floor(s % 60);
+            return `${m}:${sec.toString().padStart(2, '0')}`;
+        }
+
+        // ── Loading Overlay ────────────────────────────
+        function showLoading(msg) {
+            document.getElementById('loading-text').textContent = msg;
+            document.getElementById('loading-overlay').classList.add('visible');
+        }
+        function updateLoading(msg) {
+            document.getElementById('loading-text').textContent = msg;
+        }
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.remove('visible');
+        }
+
+        // ── Keyboard shortcut ──────────────────────────
+        textInput.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') generateSpeech();
+        });
+    </script>
+</body>
+</html>
