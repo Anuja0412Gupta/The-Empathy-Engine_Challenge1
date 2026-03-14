@@ -170,11 +170,14 @@ Returns the full breakdown of detected emotion probabilities, computed voice par
 ## 📸 Media & Demos
 
 ### Web UI Screenshots
-*(Attach images like paragraph-based answers and other screenshots here)*
-- **Text Input & Generation:** `![Text Input](path_to_screenshot)`
-- **Emotion Radar & Analysis:** `![Emotion Analysis](path_to_screenshot)`
-- **Per-Sentence Breakdown:** `![Per-Sentence Analysis](path_to_screenshot)`
-- **Voice Parameters & Audio:** `![Voice Parameters](path_to_screenshot)`
+- **Text Input & Generation:** ![Text Input](static/images/screenshot_1.png)
+- **Emotion Radar & Analysis:** ![Emotion Analysis](static/images/screenshot_2.png)
+- **Per-Sentence Breakdown:** ![Per-Sentence Analysis](static/images/screenshot_3.png)
+- **Voice Parameters & Audio:** ![Voice Parameters](static/images/media_1.png)
+
+- **Additional Paragraph Examples:**
+  - ![Paragraph Answer 1](static/images/media_2.png)
+  - ![Paragraph Answer 2](static/images/media_3.png)
 
 ### 🔊 Audio Samples
 Listen to the output of our engine with different emotional styles:
