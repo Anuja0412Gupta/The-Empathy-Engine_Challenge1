@@ -14,19 +14,19 @@ It is a powerful API and web service that dynamically modulates the vocal charac
 ## ✨ Achieving the Challenge Objectives
 
 ### ✔️ Core Functional Requirements (Must-Haves)
-1. **Text Input:** The service accepts text strings via an elegant Web UI, a REST API endpoint (`/api/synthesize`), and a Command Line Interface (CLI).
-2. **Emotion Detection:** A hybrid approach classifies text into **7 distinct emotions** (Joy, Sadness, Anger, Fear, Surprise, Disgust, and Neutral).
-3. **Vocal Parameter Modulation:** The engine programmatically alters **Rate**, **Pitch**, and **Volume** based on the detected emotion.
-4. **Emotion-to-Voice Mapping:** A highly tunable configuration file (`emotion_config.yaml`) governs the mapping logic between the emotion and the precise vocal adjustments.
-5. **Audio Output:** Returns a playable `.wav` file, streamed directly to the browser or saved locally.
+1. **Text Input:** Accepts text via Web UI, REST API (`/api/synthesize`), and CLI.
+2. **Emotion Detection:** Classifies text into **7 distinct emotions**.
+3. **Vocal Parameter Modulation:** Dynamically alters **Rate**, **Pitch**, and **Volume**.
+4. **Targeted Mapping:** Uses a tunable `emotion_config.yaml` for precise vocal adjustments.
+5. **Audio Output:** Returns `.wav` files (streamed or local).
 
 ### 🌟 Bonus Objectives & Stretch Goals (Wow Factors!)
-- **Granular Emotions:** Went beyond Positive/Negative/Neutral using a HuggingFace `distilroberta-base` model trained explicitly on 7 nuanced emotional states.
-- **Intensity Scaling:** Integrated `VADER` sentiment analysis to calculate the *magnitude* of emotion (0.0 to 1.0). The engine uses **non-linear intensity scaling**—for instance, a highly angry statement modulates pitch, rate, and styledegree exponentially more than a mildly annoyed statement.
-- **Per-Sentence Emotional Analysis for Paragraphs:** Unlike typical TTS engines that apply one flat emotion to an entire block of text, this engine splits paragraphs into individual sentences. It detects the specific emotion per sentence and wraps each one in varying XML/SSML tags dynamically before synthesis. This allows the voice to continuously shift in tone, volume, and speed as it speaks.
-- **SSML Integration:** Utilizes advanced Speech Synthesis Markup Language (SSML) to natively pass prosody (rate, pitch, volume) and `express-as` emotional style tags directly to Azure's Neural TTS. 
-- **Web Interface:** Built a beautiful, premium dark-mode UI with **FastAPI**, featuring a **WaveSurfer.js** audio visualizer and a **Chart.js** radar chart showing the exact emotional probability distribution of the text.
-- **Hybrid TTS Engine:** Cloud-first processing using highly expressive Azure Neural Voices, with an automatic, graceful offline fallback to `pyttsx3` if cloud credentials are not provided.
+- **Granular Emotions:** Uses HuggingFace `distilroberta-base` for 7 nuanced emotion states.
+- **Intensity Scaling:** `VADER` sentiment analysis drives non-linear intensity scaling of prosody.
+- **Per-Sentence Emotional Analysis:** Dynamically splits paragraphs, applying varying XML/SSML tags per sentence for shifting tones.
+- **SSML Integration:** Passes prosody and `express-as` emotional tags directly to Azure's Neural TTS.
+- **Web Interface:** Premium dark-mode FastAPI UI with WaveSurfer.js and Chart.js radar charts.
+- **Hybrid Engine:** Cloud-first Azure Neural Voices with automatic offline `pyttsx3` fallback.
 
 ---
 
@@ -36,8 +36,12 @@ The Empathy Engine uses a deeply modular pipeline designed for speed and flexibi
 
 ```mermaid
 graph TD
-    A[Text Input] --> B(Sentence Splitter)
-    B --> C{Hybrid Emotion Detector}
+    A[Text Input] --> B{Input Logic}
+    B -->|Single Word / Phrase| C1[Word-level Analysis]
+    B -->|Paragraph| C2[Sentence Splitter & Per-Sentence Analysis]
+    
+    C1 --> C{Hybrid Emotion Detector}
+    C2 --> C
     
     subgraph Analysis Phase
     C -->|Classification| D[HuggingFace DistilRoBERTa<br>7 Emotion Labels]
@@ -160,3 +164,22 @@ curl -X POST http://127.0.0.1:8000/api/synthesize \
 
 *Response Payload Example:*
 Returns the full breakdown of detected emotion probabilities, computed voice parameters, and the generated media URL for instant playback.
+
+---
+
+## 📸 Media & Demos
+
+### Web UI Screenshots
+*(Attach images like paragraph-based answers and other screenshots here)*
+- **Text Input & Generation:** `![Text Input](path_to_screenshot)`
+- **Emotion Radar & Analysis:** `![Emotion Analysis](path_to_screenshot)`
+- **Per-Sentence Breakdown:** `![Per-Sentence Analysis](path_to_screenshot)`
+- **Voice Parameters & Audio:** `![Voice Parameters](path_to_screenshot)`
+
+### 🔊 Audio Samples
+Listen to the output of our engine with different emotional styles:
+- 😡 **Angry Output:** [test_angry.wav](output/test_angry.wav)
+- 😃 **Cheerful Output:** [test_cheerful.wav](output/test_cheerful.wav)
+- 😢 **Sad Output:** [test_sad.wav](output/test_sad.wav)
+- 😲 **Excited Output:** [test_excited.wav](output/test_excited.wav)
+- 😨 **Terrified Output:** [test_terrified.wav](output/test_terrified.wav)
