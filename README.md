@@ -13,14 +13,14 @@ It is a powerful API and web service that dynamically modulates the vocal charac
 
 ## ✨ Achieving the Challenge Objectives
 
-### ✔️ Core Functional Requirements (Must-Haves)
+### ✔️ Core Functional Requirements Achieved
 1. **Text Input:** Accepts text via Web UI, REST API (`/api/synthesize`), and CLI.
 2. **Emotion Detection:** Classifies text into **7 distinct emotions**.
 3. **Vocal Parameter Modulation:** Dynamically alters **Rate**, **Pitch**, and **Volume**.
 4. **Targeted Mapping:** Uses a tunable `emotion_config.yaml` for precise vocal adjustments.
 5. **Audio Output:** Returns `.wav` files (streamed or local).
 
-### 🌟 Bonus Objectives & Stretch Goals (Wow Factors!)
+### 🌟 Bonus Objectives & Stretch Goals Achieved
 - **Granular Emotions:** Uses HuggingFace `distilroberta-base` for 7 nuanced emotion states.
 - **Intensity Scaling:** `VADER` sentiment analysis drives non-linear intensity scaling of prosody.
 - **Per-Sentence Emotional Analysis:** Dynamically splits paragraphs, applying varying XML/SSML tags per sentence for shifting tones.
@@ -121,10 +121,7 @@ pip install -r requirements.txt
 *(Note: On the first run, HuggingFace will automatically download the ~328MB `distilroberta` model.)*
 
 ### 2. Configuration (Azure TTS)
-To hear the incredibly expressive voices, an Azure Speech key is recommended.
-```bash
-cp .env.example .env
-```
+To hear the incredibly expressive voices, an Azure Speech key is recommended
 Edit `.env` and add your Azure Speech Key and Region. 
 *(If you skip this step, the engine will automatically fall back to standard `pyttsx3` voices).*
 
